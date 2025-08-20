@@ -30,3 +30,11 @@ def get_weights(risk_level, num_assets):
         weights = [1/num_assets] * num_assets
     
     return weights
+
+@app.post("/portfolio")
+def calculate_portfolio(request: PortfolioRequest):
+    tickers = request.tickers
+    start = request.start_date
+    end = request.end_date
+
+    
