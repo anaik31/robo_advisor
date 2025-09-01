@@ -1,7 +1,13 @@
+from flask import Flask, render_template, request, jsonify
+
+app = Flask(__name__)
+
 def get_response(user_input):
   user_input = user_input.lower()
 
-  if "budget" in user_input or "saving" in user_input:
+  if "Hello" in user_input or "Hi" in user_input:
+      return "Hi, how can I help you?"
+  elif "budget" in user_input or "saving" in user_input:
     return "A good rule of thumb is to save at least 20% of your income each month"
   elif "invest" in user_input or "stocks" in user_input:
     return "Investing in diversified ETFs is generally safer than picking individual stocks."
@@ -12,12 +18,17 @@ def get_response(user_input):
   else:
         return "I’m not sure about that. Can you ask something about budgeting, investing, or credit?"
 
-print("Welcome to FinBot! Type 'quit' to exit.\n")
+# Home page
+@app.route("/")
+def home():
+    return render_template("index.html")
 
-while True:
-    user_input = input("You: ")
-    if user_input.lower() == "quit":
-        print("Robo Advisor: Goodbye! Stay financially healthy!")
-        break
-    response = get_response(user_input)
-    print(f"Robo Advisor: {response}")
+# API endpoint for chat
+@app.route("/get_response", methods=["POST"])
+def respond():
+    user_input = request.json.get("message")
+    bot_response = get_response(user_input)
+    return jsonify({"response": bot_response})
+
+if __name__ == "__main__":
+    app.run(debug=True)

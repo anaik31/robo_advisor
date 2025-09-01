@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FinBot - Financial Advisor</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/styles.css') }}">
+</head>
+
+<body>
+    <h2>FinBot - Financial Advisor</h2>
+    <div id="chat-container"></div>
+    <input type="text" id="userInput" placeholder="Type your message here">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const chatContainer = document.getElementById("chat-container");
+
+        function addMessage(sender, message) {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("message");
+            msgDiv.classList.add(sender === "You" ? "user" : "bot");
+            msgDiv.textContent = message;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById("userInput").value;
+            if(!userInput) return;
+
+            addMessage("You", userInput);
+            document.getElementById("userInput").value = "";
+
+            const typingBubble = document.createElement("div");
+            typingBubble.classList.add("message", "bot");
+            typingBubble.textContent = "FinBot is typing...";
+            chatContainer.appendChild(typingBubble);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            fetch("/get_response", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatContainer.removeChild(typingBubble);
+
+                // Delay showing the actual response
+                setTimeout(() => {
+                    addMessage("FinBot", data.response);
+                }, 1000); // 1 second
+            })
+            .catch(err => {
+                chatContainer.removeChild(typingBubble);
+                addMessage("FinBot", "Sorry, something went wrong.");
+            });
+        }
+
+        // Optional: Press Enter to send
+        document.getElementById("userInput").addEventListener("keydown", function(event) {
+            if(event.key === "Enter") sendMessage();
+        });
+    </script>
+</body>
+</html>
